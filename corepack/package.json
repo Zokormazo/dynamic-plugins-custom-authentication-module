@@ -6,6 +6,7 @@
     "node": "18 || 20"
   },
   "dependencies": {
+    "@yarnpkg/cli-dist": "^3.8.3",
     "corepack": "^0.32.0"
   }
 }
