@@ -216,6 +216,7 @@ spec:
         - name: SCRIPT
           value: |
             #!/bin/bash
+            set -euo pipefail
             export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
             npm install --global corepack
             yarn install
