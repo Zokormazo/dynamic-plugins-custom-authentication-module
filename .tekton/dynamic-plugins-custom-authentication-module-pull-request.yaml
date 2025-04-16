@@ -32,6 +32,12 @@ spec:
     - linux/x86_64
   - name: dockerfile
     value: Containerfile
+  - name: build-source-image
+    value: 'true'
+  - name: hermetic
+    value: 'true'
+  - name: prefetch-input
+    value: '[{"type": "npm", "path": "corepack"}, {"type": "npm", "path": "plugins/github-auth-provider-wrapper"}, {"type": "npm", "path": "plugins/immobiliarelabs-backstage-plugin-ldap-auth"}, {"type": "npm", "path": "plugins/immobiliarelabs-backstage-plugin-ldap-auth-backend"}, {"type": "yarn", "path": "."}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -219,8 +225,8 @@ spec:
         - name: SCRIPT
           value: |
             #!/bin/bash
-            export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-            npm install --global corepack
+            set -euo pipefail
+            npm install --global /cachi2/output/deps/npm/yarnpkg-cli-dist-3.8.3.tgz
             yarn install
             yarn tsc
             yarn build
@@ -231,17 +237,27 @@ spec:
           value: $(params.hermetic)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+        - name: CACHI2_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - prefetch-dependencies
       taskRef:
+#        params:
+#        - name: name
+#          value: run-script-oci-ta
+#        - name: bundle
+#          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:c0f627069353ebd6d1ed03c8657e281eaf11be63706ea38cc53caf16cf4ffd65
+#        - name: kind
+#          value: task
+#        resolver: bundles
+        resolver: git
         params:
-        - name: name
-          value: run-script-oci-ta
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:c0f627069353ebd6d1ed03c8657e281eaf11be63706ea38cc53caf16cf4ffd65
-        - name: kind
-          value: task
-        resolver: bundles
+        - name: url
+          value: https://github.com/Zokormazo/build-definitions.git
+        - name: revision
+          value: run-script-hermeto
+        - name: pathInRepo
+          value: task/run-script-oci-ta/0.1/run-script-oci-ta.yaml
     - matrix:
         params:
         - name: PLATFORM
