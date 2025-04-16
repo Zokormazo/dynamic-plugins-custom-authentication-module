@@ -227,7 +227,10 @@ spec:
             #!/bin/bash
             set -euo pipefail
             export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-            npm install --global corepack
+            # Install corepack using the package.json on corepack/
+            cd corepack
+            npm install --global
+            cd ..
             yarn install
             yarn tsc
             yarn build
@@ -238,6 +241,8 @@ spec:
           value: $(params.hermetic)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+        - name: CACHI2_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - prefetch-dependencies
       taskRef:
