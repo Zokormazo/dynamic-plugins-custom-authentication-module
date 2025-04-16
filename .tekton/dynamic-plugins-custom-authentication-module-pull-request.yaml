@@ -37,7 +37,7 @@ spec:
   - name: hermetic
     value: 'true'
   - name: prefetch-input
-    value: '[{"type": "npm", "path": "corepack"}, {"type": "yarn", "path": "."}]'
+    value: '[{"type": "npm", "path": "yarn"}, {"type": "yarn", "path": "."}]'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -226,9 +226,7 @@ spec:
           value: |
             #!/bin/bash
             set -euo pipefail
-            export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-            npm install --global /cachi2/output/deps/npm/corepack-0.32.0.tgz
-            npm install --force --global /cachi2/output/deps/npm/yarnpkg-cli-dist-3.8.3.tgz
+            npm install --global /cachi2/output/deps/npm/yarnpkg-cli-dist-3.8.3.tgz
             yarn install
             yarn tsc
             yarn build
