@@ -186,6 +186,24 @@ spec:
       workspaces:
       - name: basic-auth
         workspace: git-auth
+    - name: generate-labels
+      params:
+        - name: label-templates
+          value:
+             - "release=$SOURCE_DATE" 
+        - name: source-date-epoch
+          value: '$(tasks.clone-repository.results.commit-timestamp)'
+      runAfter:
+        - clone-repository
+      taskRef:
+        params:
+          - name: name
+            value: generate-labels
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-generate-labels:0.1@sha256:9eee1af1686908b55e13f10bcd91c646cd8f54d8bd3700a5e2028e9f579545fc
+          - name: kind
+            value: task
+        resolver: bundles
     - name: prefetch-dependencies
       params:
       - name: input
@@ -286,6 +304,9 @@ spec:
       - name: ADDITIONAL_BASE_IMAGES
         value:
           - $(tasks.build-dynamic-plugins.results.SCRIPT_RUNNER_IMAGE_REFERENCE)
+      - name: LABELS
+        value:
+          - $(tasks.generate-labels.results.labels[*])
       - name: ANNOTATIONS
         value:
           - $(tasks.build-dynamic-plugins.results.SCRIPT_OUTPUT)

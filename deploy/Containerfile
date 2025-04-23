@@ -1,2 +1,14 @@
 FROM scratch
 COPY . .
+LABEL \
+  description="Example build packaging RHDH dynamic plugins on Konflux" \
+  io.k8s.description="Example build packaging RHDH dynamic plugins on Konflux" \
+  summary="Konflux RHDH dynamic plugins example" \
+  io.k8s.display-name="Konflux RHDH dynamic plugins example" \
+  io.openshift.tags="konflux build rhdh dynamic-plugins" \
+  name="Konflux RHDH dynamic plugins example" \
+  com.redhat.component="example-plugins" \
+  version="0.1" \
+  distribution-scope="public" \
+  url="https://github.com/Zokormazo/dynamic-plugins-custom-authentication-module" \
+  vendor="Red Hat, Inc."
