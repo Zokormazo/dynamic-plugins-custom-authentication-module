@@ -241,22 +241,14 @@ spec:
       runAfter:
       - prefetch-dependencies
       taskRef:
-#        params:
-#        - name: name
-#          value: run-script-oci-ta
-#        - name: bundle
-#          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:c0f627069353ebd6d1ed03c8657e281eaf11be63706ea38cc53caf16cf4ffd65
-#        - name: kind
-#          value: task
-#        resolver: bundles
-        resolver: git
         params:
-        - name: url
-          value: https://github.com/Zokormazo/build-definitions.git
-        - name: revision
-          value: run-script-hermeto
-        - name: pathInRepo
-          value: task/run-script-oci-ta/0.1/run-script-oci-ta.yaml
+        - name: name
+          value: run-script-oci-ta
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:6431ee2e438c8e3eca052fc9000c196fc30382fa30711b3c551032d8fb604324
+        - name: kind
+          value: task
+        resolver: bundles
     - matrix:
         params:
         - name: PLATFORM
