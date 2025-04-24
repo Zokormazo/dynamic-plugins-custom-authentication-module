@@ -237,7 +237,7 @@ spec:
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
         - name: SCRIPT_RUNNER_IMAGE
-          value: quay.io/jlandaal/yarn3-nodejs20-ubi9-minimal:latest
+          value: quay.io/konflux-ci/yarn3-nodejs20-ubi9-minimal:latest
         - name: SCRIPT_ARTIFACT_RELATIVE_PATH
           value: deploy
         - name: SCRIPT
