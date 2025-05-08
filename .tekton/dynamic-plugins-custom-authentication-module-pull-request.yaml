@@ -32,6 +32,12 @@ spec:
     - linux/x86_64
   - name: dockerfile
     value: Containerfile
+  - name: build-source-image
+    value: 'true'
+  - name: hermetic
+    value: 'true'
+  - name: prefetch-input
+    value: '{"type": "yarn", "path": "."}'
   pipelineSpec:
     description: |
       This pipeline is ideal for building multi-arch container images from a Containerfile while maintaining trust after pipeline customization.
@@ -180,6 +186,24 @@ spec:
       workspaces:
       - name: basic-auth
         workspace: git-auth
+    - name: generate-labels
+      params:
+        - name: label-templates
+          value:
+             - "release=$SOURCE_DATE" 
+        - name: source-date-epoch
+          value: '$(tasks.clone-repository.results.commit-timestamp)'
+      runAfter:
+        - clone-repository
+      taskRef:
+        params:
+          - name: name
+            value: generate-labels
+          - name: bundle
+            value: quay.io/konflux-ci/tekton-catalog/task-generate-labels:0.1@sha256:9eee1af1686908b55e13f10bcd91c646cd8f54d8bd3700a5e2028e9f579545fc
+          - name: kind
+            value: task
+        resolver: bundles
     - name: prefetch-dependencies
       params:
       - name: input
@@ -213,14 +237,13 @@ spec:
         - name: ociArtifactExpiresAfter
           value: $(params.image-expires-after)
         - name: SCRIPT_RUNNER_IMAGE
-          value: registry.redhat.io/rhel9/nodejs-20:latest
+          value: quay.io/konflux-ci/yarn3-nodejs20-ubi9-minimal:latest
         - name: SCRIPT_ARTIFACT_RELATIVE_PATH
           value: deploy
         - name: SCRIPT
           value: |
             #!/bin/bash
-            export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
-            npm install --global corepack
+            set -euo pipefail
             yarn install
             yarn tsc
             yarn build
@@ -231,6 +254,8 @@ spec:
           value: $(params.hermetic)
         - name: SOURCE_ARTIFACT
           value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+        - name: PREFETCH_ARTIFACT
+          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - prefetch-dependencies
       taskRef:
@@ -238,7 +263,7 @@ spec:
         - name: name
           value: run-script-oci-ta
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:c0f627069353ebd6d1ed03c8657e281eaf11be63706ea38cc53caf16cf4ffd65
+          value: quay.io/konflux-ci/tekton-catalog/task-run-script-oci-ta:0.1@sha256:6431ee2e438c8e3eca052fc9000c196fc30382fa30711b3c551032d8fb604324
         - name: kind
           value: task
         resolver: bundles
@@ -279,6 +304,9 @@ spec:
       - name: ADDITIONAL_BASE_IMAGES
         value:
           - $(tasks.build-dynamic-plugins.results.SCRIPT_RUNNER_IMAGE_REFERENCE)
+      - name: LABELS
+        value:
+          - $(tasks.generate-labels.results.labels[*])
       - name: ANNOTATIONS
         value:
           - $(tasks.build-dynamic-plugins.results.SCRIPT_OUTPUT)
@@ -391,26 +419,6 @@ spec:
           value: clair-scan
         - name: bundle
           value: quay.io/konflux-ci/tekton-catalog/task-clair-scan:0.2@sha256:712afcf63f3b5a97c371d37e637efbcc9e1c7ad158872339d00adc6413cd8851
-        - name: kind
-          value: task
-        resolver: bundles
-      when:
-      - input: $(params.skip-checks)
-        operator: in
-        values:
-        - "false"
-    - name: ecosystem-cert-preflight-checks
-      params:
-      - name: image-url
-        value: $(tasks.build-image-index.results.IMAGE_URL)
-      runAfter:
-      - build-image-index
-      taskRef:
-        params:
-        - name: name
-          value: ecosystem-cert-preflight-checks
-        - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-ecosystem-cert-preflight-checks:0.1@sha256:7c2438c6201ee803de361fa2e9182fdc759126d5bc010abbbddf5aa40c7adc3c
         - name: kind
           value: task
         resolver: bundles
