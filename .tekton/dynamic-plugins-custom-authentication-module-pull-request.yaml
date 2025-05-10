@@ -33,9 +33,9 @@ spec:
   - name: dockerfile
     value: Containerfile
   - name: build-source-image
-    value: 'true'
+    value: "true"
   - name: hermetic
-    value: 'true'
+    value: "true"
   - name: prefetch-input
     value: '{"type": "yarn", "path": "."}'
   pipelineSpec:
@@ -188,21 +188,21 @@ spec:
         workspace: git-auth
     - name: generate-labels
       params:
-        - name: label-templates
-          value:
-             - "release=$SOURCE_DATE" 
-        - name: source-date-epoch
-          value: '$(tasks.clone-repository.results.commit-timestamp)'
+      - name: label-templates
+        value:
+        - release=$SOURCE_DATE
+      - name: source-date-epoch
+        value: $(tasks.clone-repository.results.commit-timestamp)
       runAfter:
-        - clone-repository
+      - clone-repository
       taskRef:
         params:
-          - name: name
-            value: generate-labels
-          - name: bundle
-            value: quay.io/konflux-ci/tekton-catalog/task-generate-labels:0.1@sha256:9eee1af1686908b55e13f10bcd91c646cd8f54d8bd3700a5e2028e9f579545fc
-          - name: kind
-            value: task
+        - name: name
+          value: generate-labels
+        - name: bundle
+          value: quay.io/konflux-ci/tekton-catalog/task-generate-labels:0.1@sha256:9eee1af1686908b55e13f10bcd91c646cd8f54d8bd3700a5e2028e9f579545fc
+        - name: kind
+          value: task
         resolver: bundles
     - name: prefetch-dependencies
       params:
@@ -232,30 +232,30 @@ spec:
         workspace: netrc
     - name: build-dynamic-plugins
       params:
-        - name: ociStorage
-          value: $(params.output-image).script
-        - name: ociArtifactExpiresAfter
-          value: $(params.image-expires-after)
-        - name: SCRIPT_RUNNER_IMAGE
-          value: quay.io/konflux-ci/yarn3-nodejs20-ubi9-minimal:latest
-        - name: SCRIPT_ARTIFACT_RELATIVE_PATH
-          value: deploy
-        - name: SCRIPT
-          value: |
-            #!/bin/bash
-            set -euo pipefail
-            yarn install
-            yarn tsc
-            yarn build
-            yarn export-local
-            INDEX_BASE64=$(base64 -w 0 deploy/index.json)
-            echo -n "io.backstage.dynamic-packages=$INDEX_BASE64" > "${SCRIPT_OUTPUT}"
-        - name: HERMETIC
-          value: $(params.hermetic)
-        - name: SOURCE_ARTIFACT
-          value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
-        - name: PREFETCH_ARTIFACT
-          value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
+      - name: ociStorage
+        value: $(params.output-image).script
+      - name: ociArtifactExpiresAfter
+        value: $(params.image-expires-after)
+      - name: SCRIPT_RUNNER_IMAGE
+        value: quay.io/konflux-ci/yarn3-nodejs20-ubi9-minimal:latest
+      - name: SCRIPT_ARTIFACT_RELATIVE_PATH
+        value: deploy
+      - name: SCRIPT
+        value: |
+          #!/bin/bash
+          set -euo pipefail
+          yarn install
+          yarn tsc
+          yarn build
+          yarn export-local
+          INDEX_BASE64=$(base64 -w 0 deploy/index.json)
+          echo -n "io.backstage.dynamic-packages=$INDEX_BASE64" > "${SCRIPT_OUTPUT}"
+      - name: HERMETIC
+        value: $(params.hermetic)
+      - name: SOURCE_ARTIFACT
+        value: $(tasks.prefetch-dependencies.results.SOURCE_ARTIFACT)
+      - name: PREFETCH_ARTIFACT
+        value: $(tasks.prefetch-dependencies.results.CACHI2_ARTIFACT)
       runAfter:
       - prefetch-dependencies
       taskRef:
@@ -303,13 +303,13 @@ spec:
         value: "true"
       - name: ADDITIONAL_BASE_IMAGES
         value:
-          - $(tasks.build-dynamic-plugins.results.SCRIPT_RUNNER_IMAGE_REFERENCE)
+        - $(tasks.build-dynamic-plugins.results.SCRIPT_RUNNER_IMAGE_REFERENCE)
       - name: LABELS
         value:
-          - $(tasks.generate-labels.results.labels[*])
+        - $(tasks.generate-labels.results.labels[*])
       - name: ANNOTATIONS
         value:
-          - $(tasks.build-dynamic-plugins.results.SCRIPT_OUTPUT)
+        - $(tasks.build-dynamic-plugins.results.SCRIPT_OUTPUT)
       runAfter:
       - build-dynamic-plugins
       taskRef:
@@ -654,7 +654,8 @@ spec:
       optional: true
     - name: netrc
       optional: true
-  taskRunTemplate: {}
+  taskRunTemplate:
+    serviceAccountName: build-pipeline-dynamic-plugins-custom-authentication-module
   workspaces:
   - name: git-auth
     secret:
